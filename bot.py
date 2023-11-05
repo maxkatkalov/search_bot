@@ -5,6 +5,7 @@ import logging
 from aiogram import Bot, Dispatcher
 from aiogram.filters.command import Command
 from aiogram.types import Message
+from aiogram.enums import ParseMode
 from faker import Faker
 from dotenv import load_dotenv
 
@@ -21,6 +22,21 @@ bot = Bot(token=os.environ.get("BOT_TOKEN"))
 dp = Dispatcher()
 
 
+@dp.message(Command("get_chat_id"))
+async def get_chat_id(message):
+    chat_id = message.chat.id
+    await bot.send_message(message.chat.id, f"Chat ID: {chat_id}")
+
+
+@dp.message(Command("get_key_words"))
+async def get_key_words(message):
+    await bot.send_message(
+        message.chat.id,
+        f"*Current key words*: {', '.join(KEY_WORDS)}",
+        parse_mode=ParseMode.MARKDOWN_V2
+    )
+
+
 @dp.message()
 async def echo_with_time(message: Message):
     for word in message.text.split():
@@ -30,12 +46,6 @@ async def echo_with_time(message: Message):
                 from_chat_id=message.chat.id,
                 message_id=message.message_id
             )
-
-
-@dp.message(Command("get_chat_id"))
-async def get_chat_id(message):
-    chat_id = message.chat.id
-    await bot.send_message(message.chat.id, f"Chat ID: {chat_id}")
 
 
 async def main():
