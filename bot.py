@@ -37,6 +37,33 @@ async def get_key_words(message):
     )
 
 
+@dp.message(Command("add_keyword"))
+async def add_keyword(message: Message):
+    if message.text:
+        command, *new_words_list = message.text.split()
+        new_words_list = [new_word.strip().strip(".").lower() for new_word in new_words_list]
+        print(new_words_list)
+
+        for new_keyword in new_words_list:
+            if new_keyword not in KEY_WORDS:
+                KEY_WORDS.append(new_keyword)
+                await bot.send_message(
+                    message.chat.id,
+                    f"Added new keyword: {new_keyword}",
+                )
+            else:
+                await bot.send_message(
+                    message.chat.id,
+                    f"The keyword '{new_keyword}' is already in the list of keywords",
+                )
+    else:
+        await bot.send_message(
+            message.chat.id,
+            "Please provide a keyword to add using the /add_keyword command",
+        )
+        await get_key_words(message)
+
+
 @dp.message()
 async def echo_with_time(message: Message):
     for word in message.text.split():
