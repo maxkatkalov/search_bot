@@ -32,7 +32,7 @@ async def get_chat_id(message):
 async def get_key_words(message):
     await bot.send_message(
         message.chat.id,
-        f"*Current key words*: {', '.join(KEY_WORDS)}",
+        f"*Current key words* \({len(KEY_WORDS)}\): {', '.join(KEY_WORDS)}",
         parse_mode=ParseMode.MARKDOWN_V2
     )
 
@@ -62,6 +62,36 @@ async def add_keyword(message: Message):
             "Please provide a keyword to add using the /add_keyword command",
         )
         await get_key_words(message)
+
+
+@dp.message(Command("delete_keyword"))
+async def delete_keyword(message: Message):
+    if message.text:
+        command, *delete_words_list = message.text.split()
+        delete_words_list = [delete_word.strip().strip(".").lower() for delete_word in delete_words_list]
+
+        deleted_keywords = []
+        for delete_keyword in delete_words_list:
+            if delete_keyword in KEY_WORDS:
+                KEY_WORDS.remove(delete_keyword)
+                deleted_keywords.append(delete_keyword)
+
+        if deleted_keywords:
+            await bot.send_message(
+                message.chat.id,
+                f"Deleted keywords: {', '.join(deleted_keywords)}",
+            )
+        else:
+            await bot.send_message(
+                message.chat.id,
+                "None of the provided keywords were found in the list of keywords",
+            )
+        await get_key_words(message)
+    else:
+        await bot.send_message(
+            message.chat.id,
+            "Please provide keywords to delete using the /delete_keyword command",
+        )
 
 
 @dp.message()
