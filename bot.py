@@ -42,26 +42,26 @@ async def add_keyword(message: Message):
     if message.text:
         command, *new_words_list = message.text.split()
         new_words_list = [new_word.strip().strip(".").lower() for new_word in new_words_list]
-        print(new_words_list)
+        if new_words_list:
+            for new_keyword in new_words_list:
+                if new_keyword not in KEY_WORDS:
+                    KEY_WORDS.append(new_keyword)
+                    await bot.send_message(
+                        message.chat.id,
+                        f"Added new keyword: {new_keyword}",
+                    )
+                else:
+                    await bot.send_message(
+                        message.chat.id,
+                        f"The keyword '{new_keyword}' is already in the list of keywords",
+                    )
 
-        for new_keyword in new_words_list:
-            if new_keyword not in KEY_WORDS:
-                KEY_WORDS.append(new_keyword)
-                await bot.send_message(
-                    message.chat.id,
-                    f"Added new keyword: {new_keyword}",
-                )
-            else:
-                await bot.send_message(
-                    message.chat.id,
-                    f"The keyword '{new_keyword}' is already in the list of keywords",
-                )
-    else:
-        await bot.send_message(
-            message.chat.id,
-            "Please provide a keyword to add using the /add_keyword command",
-        )
-        await get_key_words(message)
+        else:
+            await bot.send_message(
+                message.chat.id,
+                "Please provide a keyword to add using the /add_keyword command",
+            )
+    await get_key_words(message)
 
 
 @dp.message(Command("delete_keyword"))
@@ -94,15 +94,29 @@ async def delete_keyword(message: Message):
         )
 
 
+def new_message_found(message: Message):
+    found_message = (
+        f"NEW MESSAGE FOUND 🔎\n"
+        f"\n"
+        f"<b>Message</b>:\n"
+        f"💭 '{message.text}' \n"
+        f"\n"
+        f"<a href='https://t.me/c/{str(message.chat.shifted_id)}/{message.message_id}'>Message link</a>\n"
+        f"<b>Author</b>: @{message.from_user.username} \n"
+    )
+    return found_message
+
+
 @dp.message()
-async def echo_with_time(message: Message):
+async def analyze_message(message: Message):
     for word in message.text.split():
         if word.lower() in KEY_WORDS:
-            await bot.forward_message(
+            await bot.send_message(
                 chat_id=os.environ.get("ADMIN_CHAT"),
-                from_chat_id=message.chat.id,
-                message_id=message.message_id
+                text=new_message_found(message),
+                parse_mode=ParseMode.HTML,
             )
+            break
 
 
 async def main():
